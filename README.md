@@ -6,7 +6,8 @@ An intelligent FAQ chatbot built for CodeAlpha AI Internship that uses Natural L
 ## 📌 Project Overview
 An intelligent FAQ chatbot built for CodeAlpha AI Internship that uses Natural Language Processing (NLP) to answer questions about AI, Machine Learning, and CodeAlpha.
 
-![Uploading image.png…]()
+<img width="1278" height="610" alt="image" src="https://github.com/user-attachments/assets/07b905fe-da98-4f4f-992d-9c3b27ec5365" />
+
 
 
 ## ✨ Features
