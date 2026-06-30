@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ Chatbot - CodeAlpha</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 700px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 25px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-header .avatar {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .chat-header .info h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-header .info p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .chat-header .status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Messages */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message .bubble {
+            max-width: 75%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot .bubble {
+            background: white;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .message .bubble .suggestion-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .message .bubble .suggestion-item {
+            padding: 6px 0;
+            cursor: pointer;
+            color: #1e293b;
+            transition: 0.2s;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .message .bubble .suggestion-item:hover {
+            color: #667eea;
+            padding-left: 8px;
+        }
+
+        .message .bubble .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .message .timestamp {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        /* Input */
+        .chat-input {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input textarea {
+            flex: 1;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            padding: 12px 18px;
+            resize: none;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+            font-family: inherit;
+            min-height: 45px;
+            max-height: 100px;
+            line-height: 1.5;
+        }
+
+        .chat-input textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .chat-input button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-input button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .chat-input button:active {
+            transform: scale(0.95);
+        }
+
+        .chat-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: none;
+            padding: 10px 20px;
+            gap: 5px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite both;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Quick suggestions */
+        .quick-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .quick-suggestions .suggestion-chip {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #475569;
+        }
+
+        .quick-suggestions .suggestion-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .chat-header {
+                padding: 15px 20px;
+            }
+
+            .message .bubble {
+                max-width: 85%;
+                font-size: 13px;
+            }
+
+            .quick-suggestions {
+                padding: 8px 15px;
+            }
+
+            .quick-suggestions .suggestion-chip {
+                font-size: 11px;
+                padding: 5px 12px;
+            }
+        }
+
+        /* Welcome message style */
+        .welcome-text {
+            color: #64748b;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .welcome-text i {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="info">
+                <h2>AI Assistant</h2>
+                <p>FAQ Chatbot • CodeAlpha</p>
+            </div>
+            <div class="status">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-text">
+                <i class="fas fa-comment-dots"></i> Ask me anything about AI, Machine Learning, or CodeAlpha!
+            </div>
+        </div>
+
+        <!-- Typing indicator -->
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Quick suggestions -->
+        <div class="quick-suggestions" id="quickSuggestions">
+            <button class="suggestion-chip" data-question="What is artificial intelligence?">🤖 What is AI?</button>
+            <button class="suggestion-chip" data-question="What is machine learning?">📊 What is ML?</button>
+            <button class="suggestion-chip" data-question="What is deep learning?">🧠 Deep Learning</button>
+            <button class="suggestion-chip" data-question="What is CodeAlpha?">💻 CodeAlpha</button>
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input">
+            <textarea id="userInput" rows="1" placeholder="Type your question..." maxlength="500"></textarea>
+            <button id="sendBtn" title="Send">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // FAQ DATASET
+        // =============================================
+        const faqs = [
+            {
+                question: "What is artificial intelligence?",
+                answer: "Artificial Intelligence (AI) is the simulation of human intelligence in machines that are programmed to think and learn. It encompasses various subfields including machine learning, deep learning, natural language processing, and computer vision."
+            },
+            {
+                question: "What is machine learning?",
+                answer: "Machine Learning (ML) is a subset of AI that enables systems to learn and improve from experience without being explicitly programmed. It uses algorithms to find patterns in data and make predictions or decisions."
+            },
+            {
+                question: "What is deep learning?",
+                answer: "Deep Learning is a subset of machine learning that uses neural networks with multiple layers (deep neural networks) to analyze various levels of abstraction in data. It's particularly effective for image recognition, speech processing, and natural language understanding."
+            },
+            {
+                question: "What is CodeAlpha?",
+                answer: "CodeAlpha is a leading software development company dedicated to driving innovation and excellence across emerging technologies. They offer internship programs in AI, web development, and other tech domains to help students gain real-world experience."
+            },
+            {
+                question: "What are the internship perks at CodeAlpha?",
+                answer: "Interns at CodeAlpha receive: 📄 Internship Offer Letter, 🎓 Completion Certificate (QR Verified), 🆔 Unique ID Certificate, 📝 Letter of Recommendation (based on performance), 💼 Job Opportunities/Placement Support, and 📄 Resume Building Support."
+            },
+            {
+                question: "How does this chatbot work?",
+                answer: "This chatbot uses Natural Language Processing (NLP) with cosine similarity to match your questions to the most similar FAQ in our database. It tokenizes, cleans, and compares text to find the best match, providing you with accurate answers instantly."
+            },
+            {
+                question: "What is NLP?",
+                answer: "Natural Language Processing (NLP) is a branch of AI that helps computers understand, interpret, and manipulate human language. It's used in applications like chatbots, translation tools, sentiment analysis, and text summarization."
+            },
+            {
+                question: "What are neural networks?",
+                answer: "Neural networks are computing systems inspired by the human brain that consist of interconnected nodes (neurons). They process information in layers and can learn complex patterns, making them fundamental to deep learning and modern AI applications."
+            },
+            {
+                question: "What is supervised learning?",
+                answer: "Supervised learning is a type of machine learning where models are trained on labeled data. The algorithm learns to map inputs to outputs based on example input-output pairs, making it useful for classification and regression tasks."
+            },
+            {
+                question: "What is unsupervised learning?",
+                answer: "Unsupervised learning is a type of machine learning where models find patterns in unlabeled data. It's used for clustering, anomaly detection, and dimensionality reduction, discovering hidden structures in data without predefined labels."
+            },
+            {
+                question: "What is reinforcement learning?",
+                answer: "Reinforcement Learning (RL) is a type of machine learning where an agent learns to make decisions by taking actions in an environment to maximize cumulative reward. It's inspired by behavioral psychology and used in robotics, gaming, and autonomous systems."
+            },
+            {
+                question: "What programming languages are used in AI?",
+                answer: "Popular programming languages for AI include: Python (most popular with libraries like TensorFlow, PyTorch, scikit-learn), R (for statistics), Java (enterprise applications), C++ (performance-critical systems), and Julia (scientific computing)."
+            },
+            {
+                question: "What are the tasks in CodeAlpha AI internship?",
+                answer: "CodeAlpha AI interns can choose from 4 tasks: 1️⃣ Language Translation Tool, 2️⃣ FAQ Chatbot, 3️⃣ Music Generation with AI, and 4️⃣ Object Detection and Tracking. Complete any 2 or 3 tasks to receive your certificate."
+            },
+            {
+                question: "How to submit tasks?",
+                answer: "Submit your completed tasks through the submission form shared in your WhatsApp group. Upload source code to GitHub (repository: CodeAlpha_ProjectName), post a video explanation on LinkedIn, and share the links for evaluation."
+            },
+            {
+                question: "What is GitHub?",
+                answer: "GitHub is a web-based platform for version control using Git. It allows developers to collaborate on projects, track changes, and host code repositories. It's essential for sharing projects and demonstrating skills to employers."
+            }
+        ];
+
+        // =============================================
+        // NLP UTILITIES
+        // =============================================
+
+        // Simple tokenization (split into words)
+        function tokenize(text) {
+            return text.toLowerCase()
+                .replace(/[^a-zA-Z0-9\s]/g, '') // Remove punctuation
+                .split(/\s+/)                    // Split by spaces
+                .filter(word => word.length > 0); // Remove empty strings
+        }
+
+        // Basic stopwords (common words to ignore)
+        const stopwords = new Set([
+            'a', 'an', 'the', 'of', 'for', 'on', 'at', 'to', 'in', 'by',
+            'with', 'without', 'and', 'or', 'but', 'is', 'am', 'are', 'was',
+            'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does',
+            'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must'
+        ]);
+
+        // Preprocess text: tokenize + remove stopwords
+        function preprocess(text) {
+            const tokens = tokenize(text);
+            return tokens.filter(token => !stopwords.has(token));
+        }
+
+        // Calculate cosine similarity between two arrays of words
+        function cosineSimilarity(words1, words2) {
+            if (words1.length === 0 || words2.length === 0) return 0;
+
+            // Count word frequencies
+            const freq1 = {};
+            const freq2 = {};
+
+            words1.forEach(word => freq1[word] = (freq1[word] || 0) + 1);
+            words2.forEach(word => freq2[word] = (freq2[word] || 0) + 1);
+
+            // Get unique words
+            const allWords = new Set([...Object.keys(freq1), ...Object.keys(freq2)]);
+
+            // Create vectors
+            const vec1 = [];
+            const vec2 = [];
+
+            allWords.forEach(word => {
+                vec1.push(freq1[word] || 0);
+                vec2.push(freq2[word] || 0);
+            });
+
+            // Calculate dot product and magnitudes
+            let dotProduct = 0;
+            let mag1 = 0;
+            let mag2 = 0;
+
+            for (let i = 0; i < vec1.length; i++) {
+                dotProduct += vec1[i] * vec2[i];
+                mag1 += vec1[i] * vec1[i];
+                mag2 += vec2[i] * vec2[i];
+            }
+
+            if (mag1 === 0 || mag2 === 0) return 0;
+
+            return dotProduct / (Math.sqrt(mag1) * Math.sqrt(mag2));
+        }
+
+        // =============================================
+        // CHATBOT LOGIC
+        // =============================================
+
+        // Preprocess all FAQ questions once
+        const processedFAQs = faqs.map(faq => ({
+            ...faq,
+            tokens: preprocess(faq.question)
+        }));
+
+        function findBestAnswer(userQuestion) {
+            const userTokens = preprocess(userQuestion);
+
+            if (userTokens.length === 0) {
+                return {
+                    answer: "I didn't understand that. Could you please rephrase your question? 🤔",
+                    confidence: 0,
+                    matchedQuestion: null
+                };
+            }
+
+            let bestMatch = null;
+            let highestScore = 0;
+
+            for (const faq of processedFAQs) {
+                const score = cosineSimilarity(userTokens, faq.tokens);
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = faq;
+                }
+            }
+
+            // Threshold: if similarity is too low, return a fallback
+            if (highestScore < 0.1 || !bestMatch) {
+                return {
+                    answer: "I'm not sure about that. Try asking about AI, Machine Learning, Deep Learning, or CodeAlpha! 🤖",
+                    confidence: highestScore,
+                    matchedQuestion: null
+                };
+            }
+
+            return {
+                answer: bestMatch.answer,
+                confidence: highestScore,
+                matchedQuestion: bestMatch.question
+            };
+        }
+
+        // =============================================
+        // UI FUNCTIONS
+        // =============================================
+
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const quickSuggestions = document.getElementById('quickSuggestions');
+
+        function addMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+
+            // If it's a bot message with suggestions, format differently
+            if (sender === 'bot' && message.includes('Try asking about')) {
+                bubble.innerHTML = message;
+            } else if (sender === 'bot') {
+                bubble.textContent = message;
+            } else {
+                bubble.textContent = message;
+            }
+
+            const timestamp = document.createElement('div');
+            timestamp.className = 'timestamp';
+            timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.appendChild(bubble);
+            messageDiv.appendChild(timestamp);
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addBotMessage(message) {
+            addMessage(message, 'bot');
+        }
+
+        function addUserMessage(message) {
+            addMessage(message, 'user');
+        }
+
+        function showTyping() {
+            typingIndicator.classList.add('active');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTyping() {
+            typingIndicator.classList.remove('active');
+        }
+
+        function processUserQuestion(question) {
+            if (!question || question.trim() === '') return;
+
+            // Add user message
+            addUserMessage(question);
+
+            // Clear input
+            userInput.value = '';
+            userInput.style.height = 'auto';
+
+            // Show typing indicator
+            showTyping();
+
+            // Simulate processing delay (more realistic)
+            setTimeout(() => {
+                hideTyping();
+
+                // Find best answer
+                const result = findBestAnswer(question);
+
+                // Add bot response
+                let response = result.answer;
+
+                // If matched with high confidence, show the matched question
+                if (result.matchedQuestion && result.confidence > 0.3) {
+                    // response already contains the answer
+                    addBotMessage(response);
+                } else if (result.confidence >= 0.15 && result.matchedQuestion) {
+                    // Lower confidence but still matched
+                    addBotMessage(response);
+                } else {
+                    // No good match
+                    addBotMessage(response);
+                }
+
+                // Add quick suggestions after response
+                // (already shown at bottom)
+            }, 800 + Math.random() * 400);
+        }
+
+        // =============================================
+        // EVENT LISTENERS
+        // =============================================
+
+        // Send button click
+        sendBtn.addEventListener('click', () => {
+            const question = userInput.value.trim();
+            if (question) {
+                processUserQuestion(question);
+            }
+        });
+
+        // Enter key (Shift+Enter for new line)
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const question = userInput.value.trim();
+                if (question) {
+                    processUserQuestion(question);
+                }
+            }
+        });
+
+        // Auto-resize textarea
+        userInput.addEventListener('input', () => {
+            userInput.style.height = 'auto';
+            userInput.style.height = userInput.scrollHeight + 'px';
+        });
+
+        // Quick suggestions
+        quickSuggestions.addEventListener('click', (e) => {
+            const chip = e.target.closest('.suggestion-chip');
+            if (chip) {
+                const question = chip.dataset.question;
+                if (question) {
+                    processUserQuestion(question);
+                }
+            }
+        });
+
+        // =============================================
+        // WELCOME MESSAGE
+        // =============================================
+
+        // Add a welcome message after a short delay
+        setTimeout(() => {
+            addBotMessage("👋 Welcome! I'm your AI Assistant. Ask me anything about AI, Machine Learning, Deep Learning, or CodeAlpha!");
+        }, 500);
+
+        // =============================================
+        // KEYBOARD SHORTCUT: Ctrl+Enter to send
+        // =============================================
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const question = userInput.value.trim();
+                if (question) {
+                    e.preventDefault();
+                    processUserQuestion(question);
+                }
+            }
+        });
+
+        // Focus on input when page loads
+        userInput.focus();
+
+        // =============================================
+        // DEBUG: Test in console
+        // =============================================
+        console.log('🤖 FAQ Chatbot loaded!');
+        console.log(`📚 Loaded ${faqs.length} FAQs`);
+        console.log('💡 Try asking: "What is AI?" or "What is CodeAlpha?"');
+
+        // Test function
+        function testChatbot(question) {
+            const result = findBestAnswer(question);
+            console.log(`❓ "${question}" → ✅ "${result.answer}" (confidence: ${result.confidence.toFixed(3)})`);
+            return result;
+        }
+
+        console.log('🔧 Test the chatbot with: testChatbot("your question here")');
+    </script>
+</body>
+</html>
